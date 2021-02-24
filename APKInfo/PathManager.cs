@@ -12,6 +12,7 @@ namespace APKInfo
         // 工具目录
         static public string toolDir;
         static public string aaptPath;
+        static public string apksignerPath;
 
 
         // 解压缩目录

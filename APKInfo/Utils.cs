@@ -97,17 +97,19 @@ namespace APKInfo {
         // 在一个字符串中根据pre和tail字符串查找并截取子串
         public static string findSubstr(string text, string pre, string tail) {
             string res = null;
-            if (string.IsNullOrEmpty(text) || string.IsNullOrEmpty(pre)) {
+            if (string.IsNullOrEmpty(text)) {
                 return res;
             }
 
-            int p1 = text.IndexOf(pre);
+            int p1 = 0;
+            int preLen = 0;
+            if (!string.IsNullOrEmpty(pre)) { p1 = text.IndexOf(pre); preLen = pre.Length; }
             if (p1 >= 0) {
-                int p2 = text.IndexOf(tail, p1 + pre.Length);
+                int p2 = text.IndexOf(tail, p1 + preLen);
                 if (p2 == -1) {
                     p2 = text.Length;
                 }
-                res = text.Substring(p1 + pre.Length, p2 - p1 - pre.Length);
+                res = text.Substring(p1 + preLen, p2 - p1 - preLen);
             }
             return res;
         }

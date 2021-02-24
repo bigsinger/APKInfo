@@ -19,6 +19,7 @@ namespace APKInfo {
             // 初始化路径管理器：工具路径，工作目录
             PathManager.toolDir = new Uri(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "../../../tools")).LocalPath;
             PathManager.aaptPath = Path.Combine(PathManager.toolDir, "aapt.exe");
+            PathManager.apksignerPath = Path.Combine(PathManager.toolDir, "apksigner.jar");
             PathManager.workDir = new Uri(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "../../../workDir")).LocalPath;
             if (!Directory.Exists(PathManager.workDir)) { Directory.CreateDirectory(PathManager.workDir); }
             
@@ -74,6 +75,9 @@ namespace APKInfo {
 
             // 查壳
             Console.WriteLine("加壳信息：" + ShellParser.whichShell(soLists));
+
+            // 签名信息
+            Console.WriteLine("\n签名信息：\n" + SignHelper.getApkSignInfo(PathManager.apksignerPath, zipFilePath));
 
             //foreach (var item in soLists) {
             //    Console.WriteLine(item);

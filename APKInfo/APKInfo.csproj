@@ -7,6 +7,12 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="workDir\**" />
+    <EmbeddedResource Remove="workDir\**" />
+    <None Remove="workDir\**" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Remove="LibParser.cs~RF6d3797e2.TMP" />
   </ItemGroup>
 
