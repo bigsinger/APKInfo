@@ -4,3 +4,5 @@
 /APKInfo/workDir
 APKInfo/Properties/launchSettings.json
 APKInfo/Properties/launchSettings.json
+*.user
+/publish/*.pdb
