@@ -17,10 +17,10 @@ namespace APKInfo {
             string zipFilePath = inputFilePath;
 
             // 初始化路径管理器：工具路径，工作目录
-            PathManager.toolDir = new Uri(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "../../../tools")).LocalPath;
+            PathManager.toolDir = new Uri(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "./tools")).LocalPath;
             PathManager.aaptPath = Path.Combine(PathManager.toolDir, "aapt.exe");
             PathManager.apksignerPath = Path.Combine(PathManager.toolDir, "apksigner.jar");
-            PathManager.workDir = new Uri(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "../../../workDir")).LocalPath;
+            PathManager.workDir = new Uri(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "./workDir")).LocalPath;
             if (!Directory.Exists(PathManager.workDir)) { Directory.CreateDirectory(PathManager.workDir); }
             
             // 每个apk处理时都创建一个子目录，作为临时处理目录
