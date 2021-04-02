@@ -58,7 +58,7 @@ namespace APKInfo {
             var nodes = node.SelectNodes("meta-data");
             if (metaData == null) { metaData = new Dictionary<string, string>(); }
             foreach (XmlNode item in nodes) {
-                metaData[item.Attributes["name"].Value] = item.Attributes["value"].Value;
+                metaData[item.Attributes["name"].Value] = item.Attributes["value"]?.Value;
             }
 
             // 四大组件,从application节点下取
