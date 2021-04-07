@@ -13,7 +13,16 @@ namespace APKInfo {
             }
 
             // 参数为apk文件全路径
-            string inputFilePath = args[0];
+            try {
+                Parse(args[0]);
+            } catch (Exception e) {
+                Console.WriteLine(args[0]);
+                Console.WriteLine(e.Message);
+            }
+            Console.ReadKey();
+        }
+
+        static private void Parse(string inputFilePath) {
             string zipFilePath = inputFilePath;
 
             // 初始化路径管理器：工具路径，工作目录
@@ -22,7 +31,7 @@ namespace APKInfo {
             PathManager.apksignerPath = Path.Combine(PathManager.toolDir, "apksigner.jar");
             PathManager.workDir = new Uri(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "./workDir")).LocalPath;
             if (!Directory.Exists(PathManager.workDir)) { Directory.CreateDirectory(PathManager.workDir); }
-            
+
             // 每个apk处理时都创建一个子目录，作为临时处理目录
             string subWorkDirName = Utils.getSubWorkDirName(zipFilePath);
             PathManager.workDir = Path.Combine(PathManager.workDir, subWorkDirName);
@@ -34,11 +43,12 @@ namespace APKInfo {
                 // 不再全部解压，比较费时
                 Directory.CreateDirectory(PathManager.unzipDir);
                 //ZipFile.ExtractToDirectory(zipFilePath, PathManager.unzipDir);
-
-                Utils.extractZipFile(zipFilePath, "AndroidManifest.xml", PathManager.unzipDir);
             }
 
             string manifestFile = Path.Combine(PathManager.unzipDir, "AndroidManifest.xml");
+            if (!File.Exists(manifestFile)) {
+                Utils.extractZipFile(zipFilePath, "AndroidManifest.xml", PathManager.unzipDir);
+            }
 
             ManifestParser parser = new ManifestParser();
             parser.initFromBinaryXml(manifestFile);
@@ -94,18 +104,15 @@ namespace APKInfo {
             }
 
             // 四大组件信息
-            Console.WriteLine("\n四大组件:"); 
-            Console.WriteLine("\nactivity:"); 
+            Console.WriteLine("\n四大组件:");
+            Console.WriteLine("\nactivity:");
             foreach (var item in parser.activityLists) { Console.WriteLine(item); }
-            Console.WriteLine("\nreceiver:"); 
+            Console.WriteLine("\nreceiver:");
             foreach (var item in parser.receiverLists) { Console.WriteLine(item); }
-            Console.WriteLine("\nservice:"); 
+            Console.WriteLine("\nservice:");
             foreach (var item in parser.serviceLists) { Console.WriteLine(item); }
-            Console.WriteLine("\nprovider:"); 
+            Console.WriteLine("\nprovider:");
             foreach (var item in parser.providerLists) { Console.WriteLine(item); }
-            
-
-            Console.ReadKey();
         }
     }
 }
