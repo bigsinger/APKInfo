@@ -54,7 +54,7 @@ namespace APKInfo {
             this.minSdkVer = node.Attributes["minSdkVersion"].Value;
             this.targetSdkVer = node.Attributes["targetSdkVersion"].Value;
             node = root.SelectSingleNode("application");
-            this.applicationClass = node.Attributes["name"].Value;
+            this.applicationClass = node.Attributes["name"]?.Value;
             var nodes = node.SelectNodes("meta-data");
             if (metaData == null) { metaData = new Dictionary<string, string>(); }
             foreach (XmlNode item in nodes) {
