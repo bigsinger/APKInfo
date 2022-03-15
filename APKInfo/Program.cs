@@ -99,7 +99,11 @@ namespace APKInfo {
             Console.WriteLine("加壳信息：" + ShellParser.whichShell(soLists));
 
             // 签名信息
-            Console.WriteLine("\n签名信息：\n" + SignHelper.getApkSignInfo(PathManager.apksignerPath, zipFilePath));
+            try {
+                Console.WriteLine("\n签名信息：\n" + SignHelper.getApkSignInfo(PathManager.apksignerPath, zipFilePath));
+            } catch (Exception e) {
+                Console.WriteLine(e.Message +  " 本地缺少Java环境");
+            }
 
             //foreach (var item in soLists) {
             //    Console.WriteLine(item);
