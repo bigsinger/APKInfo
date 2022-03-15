@@ -24,6 +24,7 @@ namespace APKInfo {
 
         static private void Parse(string inputFilePath) {
             string zipFilePath = inputFilePath;
+            bool noAMFile = false;
 
             // 初始化路径管理器：工具路径，工作目录
             PathManager.toolDir = new Uri(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "./tools")).LocalPath;
@@ -45,13 +46,19 @@ namespace APKInfo {
                 //ZipFile.ExtractToDirectory(zipFilePath, PathManager.unzipDir);
             }
 
-            string manifestFile = Path.Combine(PathManager.unzipDir, "AndroidManifest.xml");
-            if (!File.Exists(manifestFile)) {
-                Utils.extractZipFile(zipFilePath, "AndroidManifest.xml", PathManager.unzipDir);
-            }
 
+            string manifestFile = Path.Combine(PathManager.unzipDir, "AndroidManifest.xml");
             ManifestParser parser = new ManifestParser();
-            parser.initFromBinaryXml(manifestFile);
+            try {
+                if (!File.Exists(manifestFile)) {
+                    Utils.extractZipFile(zipFilePath, "AndroidManifest.xml", PathManager.unzipDir);
+                }
+                parser.initFromBinaryXml(manifestFile);
+            } catch (Exception e) {
+                noAMFile = true;
+                Console.Write("解压AndroidManifest.xml文件失败，文件可能存在伪加密或者非法APK包：");
+                Console.WriteLine(e.Message);
+            }
 
 
             // aapt的方式获取apk信息
@@ -65,7 +72,7 @@ namespace APKInfo {
             }
             string res = Utils.runCmd(PathManager.aaptPath, string.Format("dump badging \"{0}\"", zipFilePath));
             zipFilePath = inputFilePath;
-            parser.initFromAapt(res);
+            parser.initFromAaptBadging(res);
 
             Console.WriteLine(parser.appName + "\t" + parser.packageName + "\tversionName: " + parser.versionName + "\tversionCode: " + parser.versionCode);
             Console.WriteLine(string.Format("SDK: {0}({1})\ttargetSDK: {2}({3})\n", parser.minSdkVer, SdkOsMap.getSDKOSDesc(parser.minSdkVer), parser.targetSdkVer, SdkOsMap.getSDKOSDesc(parser.targetSdkVer)));
@@ -74,9 +81,14 @@ namespace APKInfo {
             Console.WriteLine("nativeCode: " + parser.nativeCode);
 
             // 显示apk的图标文件
-            Utils.extractZipFile(zipFilePath, parser.appIcon, PathManager.unzipDir);
-            string iconFile = new Uri(Path.Combine(PathManager.unzipDir, parser.appIcon)).LocalPath;
-            System.Diagnostics.Process.Start("explorer.exe", "/select," + iconFile);
+            try {
+                Utils.extractZipFile(zipFilePath, parser.appIcon, PathManager.unzipDir);
+                string iconFile = new Uri(Path.Combine(PathManager.unzipDir, parser.appIcon)).LocalPath;
+                System.Diagnostics.Process.Start("explorer.exe", "/select," + iconFile);
+            } catch (Exception e) {
+                Console.Write("appIcon: " + parser.appIcon + " 解压失败，文件可能存在伪加密或者非法APK包：");
+                Console.WriteLine(e.Message);
+            }
 
 
             // so列表
@@ -93,9 +105,15 @@ namespace APKInfo {
             //    Console.WriteLine(item);
             //}
 
+            if (noAMFile) {
+                parser.initFromAaptXmlTree(Utils.runCmd(PathManager.aaptPath, string.Format("dump xmltree \"{0}\" AndroidManifest.xml", zipFilePath)));
+            }
+
             // meta-data信息
-            Console.WriteLine("\nmeta-data:");
-            foreach (var item in parser.metaData) { Console.WriteLine(item.Key + " = " + item.Value); }
+            if (parser.metaData != null) {
+                Console.WriteLine("\nmeta-data:");
+                foreach (var item in parser.metaData) { Console.WriteLine(item.Key + " = " + item.Value); }
+            }
 
             Console.WriteLine("\npress Enter to Continue or exit...");
             var key = Console.ReadKey();

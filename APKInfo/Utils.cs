@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -111,6 +112,70 @@ namespace APKInfo {
                 }
                 res = text.Substring(p1 + preLen, p2 - p1 - preLen);
             }
+            return res;
+        }
+
+        /// <summary>
+        /// 获取文本中pre和tail包含的所有子串，但是要先找到tag1和tag2
+        /// </summary>
+        /// <param name="text"></param>
+        /// <param name="pre"></param>
+        /// <param name="tail"></param>
+        /// <returns></returns>
+        public static ArrayList findAllTags(string text, string tag1, string tag2, string pre, string tail) {
+            if (string.IsNullOrEmpty(text)) { return null; }
+            ArrayList res = new();
+
+            int p1 = 0;
+            int p2 = 0;
+            while (true) {
+                p1 = text.IndexOf(tag1, p2);
+                if (p1 == -1) { break; }
+                p1 = text.IndexOf(tag2, p1 + tag1.Length);
+                if (p1 == -1) { break; }
+
+
+                p1 = text.IndexOf(pre, p1 + tag2.Length);
+                if (p1 == -1) { break; }
+                p2 = text.IndexOf(tail, p1 + pre.Length);
+                if (p2 == -1) { break; }
+                res.Add(text.Substring(p1 + pre.Length, p2 - p1 - pre.Length));
+            }
+
+            return res;
+        }
+
+        public static Dictionary<string, string> findAllDictionary(string text, string tag, string tag1, string pre1, string tail1, string tag2, string pre2, string tail2) {
+            if (string.IsNullOrEmpty(text)) { return null; }
+            Dictionary<string, string> res = new();
+
+            int p1 = 0;
+            int p2 = 0;
+            string k = null;
+            string v = null;
+            while (true) {
+                p1 = text.IndexOf(tag, p2);
+                if (p1 == -1) { break; }
+
+                p1 = text.IndexOf(tag1, p1 + tag.Length);
+                if (p1 == -1) { break; }
+                p1 = text.IndexOf(pre1, p1 + tag1.Length);
+                if (p1 == -1) { break; }
+                p2 = text.IndexOf(tail1, p1 + pre1.Length);
+                if (p2 == -1) { break; }
+                k = text.Substring(p1 + pre1.Length, p2 - p1 - pre1.Length);
+
+                p1 = text.IndexOf(tag2, p2 + tail1.Length);
+                if (p1 == -1) { break; }
+                p1 = text.IndexOf(pre2, p1 + tag2.Length);
+                if (p1 == -1) { break; }
+                p2 = text.IndexOf(tail2, p1 + pre2.Length);
+                if (p2 == -1) { break; }
+                v = text.Substring(p1 + pre2.Length, p2 - p1 - pre2.Length);
+
+                res[k] = v;
+            }
+
             return res;
         }
 

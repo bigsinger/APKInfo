@@ -20,7 +20,7 @@ namespace APKInfo {
         public string applicationClass { set; get; }
         public string lauchActivity { set; get; }
         public string nativeCode { set; get; }
-        public Dictionary<string, string> metaData{ set; get; }
+        public Dictionary<string, string> metaData { set; get; }
         public ArrayList activityLists { set; get; }
         public ArrayList receiverLists { set; get; }
         public ArrayList serviceLists { set; get; }
@@ -54,7 +54,7 @@ namespace APKInfo {
             this.minSdkVer = node.Attributes["minSdkVersion"].Value;
             this.targetSdkVer = node.Attributes["targetSdkVersion"].Value;
             node = root.SelectSingleNode("application");
-            this.applicationClass = node.Attributes["name"]?.Value;
+            this.applicationClass = node.Attributes["name"]?.Value ?? "null";
             var nodes = node.SelectNodes("meta-data");
             if (metaData == null) { metaData = new Dictionary<string, string>(); }
             foreach (XmlNode item in nodes) {
@@ -80,11 +80,47 @@ namespace APKInfo {
         }
 
         // 输入：aapt dump badging 1.apk 的内容
-        public bool initFromAapt(string text) {
+        public bool initFromAaptBadging(string text) {
             appName = Utils.findSubstr(text, @"application-label:'", @"'");
             appIcon = Utils.findSubstr(text, @"icon='", @"'");
             lauchActivity = Utils.findSubstr(text, @"launchable-activity: name='", @"'");
             nativeCode = Utils.findSubstr(text, @"native-code: '", "\n");
+
+            string tempText = Utils.findSubstr(text, @"package:", ":");
+            if (packageName is null) {
+                packageName = Utils.findSubstr(tempText, @"name='", @"'") ?? "null";
+            }
+            if (versionName is null) {
+                versionName = Utils.findSubstr(tempText, @"versionName='", @"'") ?? "null";
+            }
+            if (versionCode is null) {
+                versionCode = Utils.findSubstr(tempText, @"versionCode='", @"'") ?? "null";
+            }
+            if (applicationClass is null) {
+                applicationClass = "null";
+            }
+            if (minSdkVer is null) {
+                minSdkVer = Utils.findSubstr(text, @"sdkVersion:'", @"'") ?? "null";
+            }
+            if (targetSdkVer is null) {
+                targetSdkVer = Utils.findSubstr(text, @"targetSdkVersion:'", @"'") ?? "null";
+            }
+            return true;
+        }
+
+        // 输入：aapt dump xmltree 1.apk AndroidManifest.xml的内容，主要获取四大组件和meta-data
+        public bool initFromAaptXmlTree(string text) {
+            activityLists?.Clear();
+            receiverLists?.Clear();
+            serviceLists?.Clear();
+            providerLists?.Clear();
+            metaData?.Clear();
+
+            activityLists = Utils.findAllTags(text, "E: activity", "name", "\"", "\"");
+            receiverLists = Utils.findAllTags(text, "E: receiver", "name", "\"", "\"");
+            serviceLists = Utils.findAllTags(text, "E: service", "name", "\"", "\"");
+            providerLists = Utils.findAllTags(text, "E: provider", "name", "\"", "\"");
+            metaData = Utils.findAllDictionary(text, "meta-data", "name", "\"", "\"", "value", "\"", "\"");
             return true;
         }
     }
