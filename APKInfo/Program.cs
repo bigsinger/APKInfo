@@ -12,9 +12,16 @@ namespace APKInfo {
                 return;
             }
 
-            // 参数为apk文件全路径
+            // 判断文件是否存在
+            string filePath = args[0];
+            if (!File.Exists(filePath)) {
+                Console.WriteLine("file not exists: " + filePath);
+                Console.ReadKey();
+                return;
+            }
+
             try {
-                Parse(args[0]);
+                Parse(filePath);
             } catch (Exception e) {
                 Console.WriteLine(args[0]);
                 Console.WriteLine(e.Message);
@@ -22,6 +29,10 @@ namespace APKInfo {
             Console.ReadKey();
         }
 
+        /// <summary>
+        /// 参数为APK文件全路径
+        /// </summary>
+        /// <param name="inputFilePath"></param>
         static private void Parse(string inputFilePath) {
             string zipFilePath = inputFilePath;
             bool noAMFile = false;
