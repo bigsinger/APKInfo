@@ -1,4 +1,5 @@
-﻿using System;
+﻿using APKInfo.FrameworkParser;
+using System;
 using System.Collections;
 using System.IO;
 using System.IO.Compression;
@@ -108,6 +109,12 @@ namespace APKInfo {
 
             // 查壳
             Console.WriteLine("加壳信息：" + ShellParser.whichShell(soLists));
+
+            // 是否是xposed插件
+            XposedParser xposedParser = new XposedParser();
+            if (xposedParser.parse(zipFilePath)) {
+                Console.WriteLine("APP为Xposed插件，包名: " + xposedParser.plugPackage);
+            }
 
             // 签名信息
             try {

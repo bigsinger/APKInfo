@@ -181,6 +181,7 @@ namespace APKInfo {
 
         // 从zip文件中解压出指定的文件
         public static bool extractZipFile(string zipPath, string entryName, string localDir) {
+            bool success = false;
             using (ZipArchive archive = ZipFile.OpenRead(zipPath)) {
                 foreach (ZipArchiveEntry entry in archive.Entries) {
                     if (entry.FullName.Equals(entryName)) {
@@ -191,11 +192,12 @@ namespace APKInfo {
                             Directory.CreateDirectory(dir);
                         }
                         entry.ExtractToFile(destinationPath, true);
+                        success = true;
                         break;
                     }
                 }
             }
-            return true;
+            return success;
         }
     }
 }
