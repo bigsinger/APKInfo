@@ -6,6 +6,9 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace APKInfo.FrameworkParser {
+    /// <summary>
+    /// xposed插件解析类
+    /// </summary>
     internal class XposedParser {
         public string plugName { get; set; }
         public string plugDesc { get; set; }

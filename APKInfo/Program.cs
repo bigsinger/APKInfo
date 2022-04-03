@@ -137,7 +137,7 @@ namespace APKInfo {
                 foreach (var item in parser.metaData) { Console.WriteLine(item.Key + " = " + item.Value); }
             }
 
-            Console.WriteLine("\npress Enter to Continue or exit...");
+            Console.WriteLine("\n按下 Enter 按键继续分析四大组件, 或直接退出...");
             var key = Console.ReadKey();
             if (key.Key != ConsoleKey.Enter) {
                 return;
@@ -153,6 +153,17 @@ namespace APKInfo {
             foreach (var item in parser.serviceLists) { Console.WriteLine(item); }
             Console.WriteLine("\nprovider:");
             foreach (var item in parser.providerLists) { Console.WriteLine(item); }
+            
+            
+            Console.WriteLine("\n按下 Enter 按键继续分析SDK情况, 或直接退出...");
+            key = Console.ReadKey();
+            if (key.Key != ConsoleKey.Enter) {
+                return;
+            }
+            parseSDK();
+        }
+
+        static void parseSDK() {
         }
     }
 }

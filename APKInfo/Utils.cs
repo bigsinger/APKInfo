@@ -36,33 +36,6 @@ namespace APKInfo {
             return result;
         }
 
-        ////Process.StandardOutput使用注意事项 http://blog.csdn.net/zhangweixing0/article/details/7356841
-        //private void runCmd(string toolFile, string args) {
-        //    Process p;
-        //    ProcessStartInfo psi;
-        //    psi = new ProcessStartInfo(toolFile);
-        //    psi.WorkingDirectory = System.AppDomain.CurrentDomain.BaseDirectory;
-        //    psi.Arguments = args;
-        //    psi.CreateNoWindow = true;
-        //    psi.WindowStyle = ProcessWindowStyle.Hidden;
-        //    psi.UseShellExecute = false;
-        //    psi.RedirectStandardOutput = true;
-        //    psi.RedirectStandardError = true;
-        //    psi.StandardOutputEncoding = Encoding.UTF8;
-        //    psi.StandardErrorEncoding = Encoding.UTF8;
-
-        //    p = Process.Start(psi);
-
-        //    p.OutputDataReceived += new DataReceivedEventHandler(OnDataReceived);
-        //    p.BeginOutputReadLine();
-
-        //    p.WaitForExit();
-
-        //    if (p.ExitCode != 0) {
-        //        LOGE(p.StandardError.ReadToEnd());
-        //    }
-        //    p.Close();
-        //}
         public static string getMD5HashFromFile(string fileName) {
             using (var md5 = MD5.Create()) {
                 using (var stream = File.OpenRead(fileName)) {
@@ -116,26 +89,28 @@ namespace APKInfo {
         }
 
         /// <summary>
-        /// 获取文本中pre和tail包含的所有子串，但是要先找到tag1和tag2
+        /// 获取文本中pre和tail包含的所有子串，但是要先找到key1和key2
         /// </summary>
         /// <param name="text"></param>
+        /// <param name="key1"></param>
+        /// <param name="key2"></param>
         /// <param name="pre"></param>
         /// <param name="tail"></param>
         /// <returns></returns>
-        public static ArrayList findAllTags(string text, string tag1, string tag2, string pre, string tail) {
+        public static ArrayList findAllTags(string text, string key1, string key2, string pre, string tail) {
             if (string.IsNullOrEmpty(text)) { return null; }
             ArrayList res = new();
 
             int p1 = 0;
             int p2 = 0;
             while (true) {
-                p1 = text.IndexOf(tag1, p2);
+                p1 = text.IndexOf(key1, p2);
                 if (p1 == -1) { break; }
-                p1 = text.IndexOf(tag2, p1 + tag1.Length);
+                p1 = text.IndexOf(key2, p1 + key1.Length);
                 if (p1 == -1) { break; }
 
 
-                p1 = text.IndexOf(pre, p1 + tag2.Length);
+                p1 = text.IndexOf(pre, p1 + key2.Length);
                 if (p1 == -1) { break; }
                 p2 = text.IndexOf(tail, p1 + pre.Length);
                 if (p2 == -1) { break; }
@@ -145,7 +120,19 @@ namespace APKInfo {
             return res;
         }
 
-        public static Dictionary<string, string> findAllDictionary(string text, string tag, string tag1, string pre1, string tail1, string tag2, string pre2, string tail2) {
+        /// <summary>
+        /// 查找所有的键值对
+        /// </summary>
+        /// <param name="text"></param>
+        /// <param name="key">键值对开始的关键词</param>
+        /// <param name="key1">定位到键的关键词</param>
+        /// <param name="pre1"></param>
+        /// <param name="tail1"></param>
+        /// <param name="key2">定位到值的关键词</param>
+        /// <param name="pre2"></param>
+        /// <param name="tail2"></param>
+        /// <returns></returns>
+        public static Dictionary<string, string> findAllDictionary(string text, string key, string key1, string pre1, string tail1, string key2, string pre2, string tail2) {
             if (string.IsNullOrEmpty(text)) { return null; }
             Dictionary<string, string> res = new();
 
@@ -154,20 +141,20 @@ namespace APKInfo {
             string k = null;
             string v = null;
             while (true) {
-                p1 = text.IndexOf(tag, p2);
+                p1 = text.IndexOf(key, p2);
                 if (p1 == -1) { break; }
 
-                p1 = text.IndexOf(tag1, p1 + tag.Length);
+                p1 = text.IndexOf(key1, p1 + key.Length);
                 if (p1 == -1) { break; }
-                p1 = text.IndexOf(pre1, p1 + tag1.Length);
+                p1 = text.IndexOf(pre1, p1 + key1.Length);
                 if (p1 == -1) { break; }
                 p2 = text.IndexOf(tail1, p1 + pre1.Length);
                 if (p2 == -1) { break; }
                 k = text.Substring(p1 + pre1.Length, p2 - p1 - pre1.Length);
 
-                p1 = text.IndexOf(tag2, p2 + tail1.Length);
+                p1 = text.IndexOf(key2, p2 + tail1.Length);
                 if (p1 == -1) { break; }
-                p1 = text.IndexOf(pre2, p1 + tag2.Length);
+                p1 = text.IndexOf(pre2, p1 + key2.Length);
                 if (p1 == -1) { break; }
                 p2 = text.IndexOf(tail2, p1 + pre2.Length);
                 if (p2 == -1) { break; }
