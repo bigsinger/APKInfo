@@ -1,8 +1,10 @@
-﻿using APKInfo.FrameworkParser;
+﻿using AlphaOmega.Debug;
+using APKInfo.FrameworkParser;
 using System;
 using System.Collections;
 using System.IO;
 using System.IO.Compression;
+using System.Linq;
 
 namespace APKInfo {
     class Program {
@@ -153,14 +155,58 @@ namespace APKInfo {
             foreach (var item in parser.serviceLists) { Console.WriteLine(item); }
             Console.WriteLine("\nprovider:");
             foreach (var item in parser.providerLists) { Console.WriteLine(item); }
-            
-            
+
+
+            // 解析资源文件中的字符串
+            Console.WriteLine("\n按下 Enter 按键继续分析资源情况, 或直接退出...");
+            key = Console.ReadKey();
+            if (key.Key != ConsoleKey.Enter) {
+                return;
+            }
+
+            string resourceFile = Path.Combine(PathManager.unzipDir, "resources.arsc");
+            try {
+                if (!File.Exists(resourceFile)) {
+                    Utils.extractZipFile(zipFilePath, "resources.arsc", PathManager.unzipDir);
+                }
+                readResource(resourceFile);
+            } catch (Exception e) {
+                noAMFile = true;
+                Console.Write("解压 resources.arsc 文件失败，文件可能存在伪加密或者非法APK包：");
+                Console.WriteLine(e.Message);
+            }
+
+
             Console.WriteLine("\n按下 Enter 按键继续分析SDK情况, 或直接退出...");
             key = Console.ReadKey();
             if (key.Key != ConsoleKey.Enter) {
                 return;
             }
             parseSDK();
+        }
+
+
+        /*
+         参考：https://github.com/DKorablin/ApkReader
+        先下载release的ApkReader.xml并添加到工程引用
+         */
+        static void readResource(string resourceFilePath) {
+            Byte[] resourceBytes = File.ReadAllBytes(resourceFilePath);
+            ArscFile resources = new ArscFile(resourceBytes);
+
+            foreach (var item in resources.ResourceMap) {
+                Console.WriteLine(item.Key + "\t\t\t" + string.Join("; ", item.Value.Select(p => p.Value).ToArray()));
+            }
+
+            ////OldResourceFile resources2 = new OldResourceFile(resourceBytes);
+            ////var table2 = resources2.ResourceMap;
+            //foreach (var item in resources.ResourceMap) {
+            //    string key = "@" + item.Key.ToString("X4");
+            //    string value1 = string.Join(";", item.Value.Select(p => p.Value).ToArray());
+            //    //string value2 = string.Join(";", table2[key].ToArray());
+            //    //if(!string.Equals(value1, value2))
+            //    //	throw new Exception("Not equal");
+            //}
         }
 
         static void parseSDK() {
