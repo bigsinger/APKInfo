@@ -1,9 +1,11 @@
-/APKInfo/bin
 /APKInfo/obj
 /.vs
-/APKInfo/workDir
-APKInfo/Properties/launchSettings.json
-APKInfo/Properties/launchSettings.json
-*.user
+/APKInfo/bin/workDir
+APKInfo/Properties
 /publish/*.pdb
 /publish/workDir
+*.json
+*.pdb
+*.user
+APKInfo/bin/APKInfo.dll
+APKInfo/bin/APKInfo.exe
