@@ -165,26 +165,5 @@ namespace APKInfo {
 
             return res;
         }
-
-        // 从zip文件中解压出指定的文件
-        public static bool extractZipFile(string zipPath, string entryName, string localDir) {
-            bool success = false;
-            using (ZipArchive archive = ZipFile.OpenRead(zipPath)) {
-                foreach (ZipArchiveEntry entry in archive.Entries) {
-                    if (entry.FullName.Equals(entryName)) {
-                        // Gets the full path to ensure that relative segments are removed.
-                        string destinationPath = Path.GetFullPath(Path.Combine(localDir, entry.FullName));
-                        string dir = Directory.GetParent(destinationPath).FullName;
-                        if (!Directory.Exists(dir)) {
-                            Directory.CreateDirectory(dir);
-                        }
-                        entry.ExtractToFile(destinationPath, true);
-                        success = true;
-                        break;
-                    }
-                }
-            }
-            return success;
-        }
     }
 }

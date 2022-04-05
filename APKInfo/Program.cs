@@ -82,6 +82,7 @@ namespace APKInfo {
         /// </summary>
         /// <param name="inputFilePath"></param>
         static private void parseAll(string inputFilePath) {
+            PathManager.inputFilePath = inputFilePath;
             string zipFilePath = PathManager.zipFilePath;
             bool noAMFile = false;
 
@@ -89,7 +90,7 @@ namespace APKInfo {
             ManifestParser parser = new ManifestParser();
             try {
                 if (!File.Exists(manifestFile)) {
-                    Utils.extractZipFile(zipFilePath, "AndroidManifest.xml", PathManager.unzipDir);
+                    star.ZipHelper.SharpZip.extractZipFile(zipFilePath, "AndroidManifest.xml", PathManager.unzipDir);
                 }
                 parser.initFromBinaryXml(manifestFile);
             } catch (Exception e) {
@@ -112,7 +113,7 @@ namespace APKInfo {
 
             // 显示apk的图标文件
             try {
-                Utils.extractZipFile(zipFilePath, parser.appIcon, PathManager.unzipDir);
+                star.ZipHelper.SharpZip.extractZipFile(zipFilePath, parser.appIcon, PathManager.unzipDir);
                 string iconFile = new Uri(Path.Combine(PathManager.unzipDir, parser.appIcon)).LocalPath;
                 System.Diagnostics.Process.Start("explorer.exe", "/select," + iconFile);
             } catch (Exception e) {
@@ -183,7 +184,7 @@ namespace APKInfo {
             string resourceFile = Path.Combine(PathManager.unzipDir, "resources.arsc");
             try {
                 if (!File.Exists(resourceFile)) {
-                    Utils.extractZipFile(zipFilePath, "resources.arsc", PathManager.unzipDir);
+                    star.ZipHelper.SharpZip.extractZipFile(zipFilePath, "resources.arsc", PathManager.unzipDir);
                 }
                 readResource(resourceFile);
             } catch (Exception e) {
@@ -238,7 +239,7 @@ namespace APKInfo {
                     Console.WriteLine("parsing: " + dex.ToString());
                     string dexFile = Path.Combine(PathManager.unzipDir, dex.ToString());
                     if (!File.Exists(dexFile)) {
-                        Utils.extractZipFile(filePath, dex.ToString(), PathManager.unzipDir);
+                        star.ZipHelper.SharpZip.extractZipFile(filePath, dex.ToString(), PathManager.unzipDir);
                     }
                     classLists += Utils.runCmd("java", string.Format("-jar \"{0}\" list classes  \"{1}\"", PathManager.baksmaliPath, dexFile)) + "\n";
                 }

@@ -15,7 +15,7 @@ namespace APKInfo.FrameworkParser {
         public string plugPackage { get; set; }
 
         public bool parse(string zipFilePath) {
-            bool success = Utils.extractZipFile(zipFilePath, "assets/xposed_init", PathManager.unzipDir);
+            bool success = star.ZipHelper.SharpZip.extractZipFile(zipFilePath, "assets/xposed_init", PathManager.unzipDir);
             if (success) {
                 string localFile = Path.Combine(PathManager.unzipDir, "assets/xposed_init");
                 plugPackage = File.ReadAllText(localFile);
