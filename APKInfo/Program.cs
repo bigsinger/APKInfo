@@ -1,7 +1,7 @@
-﻿using AlphaOmega.Debug;
-using APKInfo.FrameworkParser;
+﻿using APKInfo.FrameworkParser;
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
 using System.Linq;
@@ -9,10 +9,14 @@ using System.Linq;
 namespace APKInfo {
     class Program {
         static void Main(string[] args) {
+            string cmdTag = "all";
             if (args.Length < 1) {
                 Console.WriteLine("usage: this apkFile");
                 Console.ReadKey();
                 return;
+            }
+            if (args.Length>=2) {
+                cmdTag = args[1];
             }
 
             // 判断文件是否存在
@@ -24,7 +28,8 @@ namespace APKInfo {
             }
 
             try {
-                Parse(filePath);
+                preWork(filePath);
+                Parse(filePath, cmdTag);
             } catch (Exception e) {
                 Console.WriteLine(args[0]);
                 Console.WriteLine(e.Message);
@@ -32,34 +37,64 @@ namespace APKInfo {
             Console.ReadKey();
         }
 
+
+        static private void Parse(string filePath, string cmdTag) {
+            switch (cmdTag) {
+                case "sdk":
+                    parseSDK(filePath);
+                    break;
+                case "all":
+                default:
+                    ParseAll(filePath);
+                    break;
+            }
+        }
+
+        static private void preWork(string inputFilePath) {
+            string ext = Path.GetExtension(inputFilePath).ToLower();
+            if (ext == ".apk") {
+                PathManager.zipFilePath = inputFilePath;
+
+                // 初始化路径管理器：工具路径，工作目录
+                PathManager.toolDir = new Uri(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "./tools")).LocalPath;
+                PathManager.aaptPath = Path.Combine(PathManager.toolDir, "aapt.exe");
+                PathManager.apksignerPath = Path.Combine(PathManager.toolDir, "apksigner.jar");
+                PathManager.workDir = new Uri(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "./workDir")).LocalPath;
+                if (!Directory.Exists(PathManager.workDir)) { Directory.CreateDirectory(PathManager.workDir); }
+
+                // 每个apk处理时都创建一个子目录，作为临时处理目录
+                string subWorkDirName = Utils.getSubWorkDirName(PathManager.zipFilePath);
+                PathManager.workDir = Path.Combine(PathManager.workDir, subWorkDirName);
+                if (!Directory.Exists(PathManager.workDir)) { Directory.CreateDirectory(PathManager.workDir); }
+
+                // 把apk解压到workDir\xxxMD5xxx\unzip目录下备用
+                PathManager.unzipDir = Path.Combine(PathManager.workDir, "unzip");
+                if (!Directory.Exists(PathManager.unzipDir)) {
+                    // 不再全部解压，比较费时
+                    Directory.CreateDirectory(PathManager.unzipDir);
+                    //ZipFile.ExtractToDirectory(zipFilePath, PathManager.unzipDir);
+                }
+
+                // aapt不支持中文件路径，需要做下检查，如有中文创建临时文件
+                if (Utils.hasChinese(PathManager.zipFilePath)) {
+                    PathManager.zipFilePath = PathManager.workDir + ".apk";
+                    if (!File.Exists(PathManager.zipFilePath)) {
+                        File.Copy(inputFilePath, PathManager.zipFilePath, false);
+                    }
+                }
+            } else if (ext == ".dex") {
+
+            }
+
+        }
+
         /// <summary>
         /// 参数为APK文件全路径
         /// </summary>
         /// <param name="inputFilePath"></param>
-        static private void Parse(string inputFilePath) {
-            string zipFilePath = inputFilePath;
+        static private void ParseAll(string inputFilePath) {
+            string zipFilePath = PathManager.zipFilePath;
             bool noAMFile = false;
-
-            // 初始化路径管理器：工具路径，工作目录
-            PathManager.toolDir = new Uri(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "./tools")).LocalPath;
-            PathManager.aaptPath = Path.Combine(PathManager.toolDir, "aapt.exe");
-            PathManager.apksignerPath = Path.Combine(PathManager.toolDir, "apksigner.jar");
-            PathManager.workDir = new Uri(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "./workDir")).LocalPath;
-            if (!Directory.Exists(PathManager.workDir)) { Directory.CreateDirectory(PathManager.workDir); }
-
-            // 每个apk处理时都创建一个子目录，作为临时处理目录
-            string subWorkDirName = Utils.getSubWorkDirName(zipFilePath);
-            PathManager.workDir = Path.Combine(PathManager.workDir, subWorkDirName);
-            if (!Directory.Exists(PathManager.workDir)) { Directory.CreateDirectory(PathManager.workDir); }
-
-            // 把apk解压到workDir\xxxMD5xxx\unzip目录下备用
-            PathManager.unzipDir = Path.Combine(PathManager.workDir, "unzip");
-            if (!Directory.Exists(PathManager.unzipDir)) {
-                // 不再全部解压，比较费时
-                Directory.CreateDirectory(PathManager.unzipDir);
-                //ZipFile.ExtractToDirectory(zipFilePath, PathManager.unzipDir);
-            }
-
 
             string manifestFile = Path.Combine(PathManager.unzipDir, "AndroidManifest.xml");
             ManifestParser parser = new ManifestParser();
@@ -76,14 +111,6 @@ namespace APKInfo {
 
 
             // aapt的方式获取apk信息
-
-            // aapt不支持中文件路径，需要做下检查，如有中文创建临时文件
-            if (Utils.hasChinese(zipFilePath)) {
-                zipFilePath = PathManager.workDir + ".apk";
-                if (!File.Exists(zipFilePath)) {
-                    File.Copy(inputFilePath, zipFilePath, false);
-                }
-            }
             string res = Utils.runCmd(PathManager.aaptPath, string.Format("dump badging \"{0}\"", zipFilePath));
             zipFilePath = inputFilePath;
             parser.initFromAaptBadging(res);
@@ -182,7 +209,7 @@ namespace APKInfo {
             if (key.Key != ConsoleKey.Enter) {
                 return;
             }
-            parseSDK();
+            parseSDK(zipFilePath);
         }
 
 
@@ -191,12 +218,12 @@ namespace APKInfo {
         先下载release的ApkReader.xml并添加到工程引用
          */
         static void readResource(string resourceFilePath) {
-            Byte[] resourceBytes = File.ReadAllBytes(resourceFilePath);
-            ArscFile resources = new ArscFile(resourceBytes);
+            //Byte[] resourceBytes = File.ReadAllBytes(resourceFilePath);
+            //ArscFile resources = new ArscFile(resourceBytes);
 
-            foreach (var item in resources.ResourceMap) {
-                Console.WriteLine(item.Key + "\t\t\t" + string.Join("; ", item.Value.Select(p => p.Value).ToArray()));
-            }
+            //foreach (var item in resources.ResourceMap) {
+            //    Console.WriteLine(item.Key + "\t\t\t" + string.Join("; ", item.Value.Select(p => p.Value).ToArray()));
+            //}
 
             ////OldResourceFile resources2 = new OldResourceFile(resourceBytes);
             ////var table2 = resources2.ResourceMap;
@@ -209,7 +236,52 @@ namespace APKInfo {
             //}
         }
 
-        static void parseSDK() {
+        static void parseSDK(string filePath) {
+            if (!File.Exists(PathManager.sdkPath)) {
+                Console.WriteLine("SDK配置文件不存在: " + PathManager.sdkPath);
+                Console.ReadKey();
+                return;
+            }
+
+            string classLists = "";
+            string ext = Path.GetExtension(filePath).ToLower();
+            if (ext == ".apk") {
+                var dexes = star.ZipHelper.SharpZip.getFilesUnderZipRoot(filePath, ".dex");
+                foreach (var dex in dexes) {
+                    Console.WriteLine("parsing: " + dex.ToString());
+                    string dexFile = Path.Combine(PathManager.unzipDir, dex.ToString());
+                    if (!File.Exists(dexFile)) {
+                        Utils.extractZipFile(filePath, dex.ToString(), PathManager.unzipDir);
+                    }
+                    classLists += Utils.runCmd("java", string.Format("-jar \"{0}\" list classes  \"{1}\"", PathManager.baksmaliPath, dexFile)) + "\n";
+                }
+            } else if (ext == ".dex") {
+                string dexFile = filePath;
+                Console.WriteLine("parsing: " + dexFile);
+                classLists += Utils.runCmd("java", string.Format("-jar \"{0}\" list classes  \"{1}\"", PathManager.baksmaliPath, dexFile));
+            } else {
+                Console.WriteLine("invalid file");
+                Console.ReadKey();
+                return;
+            }
+
+            if (!string.IsNullOrEmpty(classLists)) {
+                classLists = classLists.Replace('/', '.');
+                List<Model.SDKItem> hitSDKs = new();
+                try {
+                    string json = File.ReadAllText(PathManager.sdkPath);
+                    Model.SDKItems sdks = Newtonsoft.Json.JsonConvert.DeserializeObject<Model.SDKItems>(json);
+                    foreach (var item in sdks.items) {
+                        if (classLists.Contains(item.uid)) {
+                            hitSDKs.Add(item);
+                            Console.WriteLine(string.Format("{0}\t{1}\t{2}", item.uid, item.title, item.serviceProvider));
+                        }
+                    }
+                } catch (Exception) {
+                    throw;
+                }
+            }
         }
+
     }
 }

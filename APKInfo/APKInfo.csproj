@@ -28,17 +28,26 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Remove="star\ZIPHelper.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="ApkReader.dll" />
     <None Remove="LibParser.cs~RF6d3797e2.TMP" />
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="androidxml" Version="1.1.24" />
+    <Compile Include="..\..\..\osopen\StarLibCS\ZIPHelper.cs" Link="star\ZIPHelper.cs" />
   </ItemGroup>
 
   <ItemGroup>
-    <Reference Include="ApkReader">
-      <HintPath>bin\ApkReader.dll</HintPath>
-    </Reference>
+    <PackageReference Include="androidxml" Version="1.1.24" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
+    <PackageReference Include="SharpZipLib" Version="1.3.3" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="star\" />
   </ItemGroup>
 
 </Project>
