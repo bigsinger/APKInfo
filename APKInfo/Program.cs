@@ -1,56 +1,45 @@
-﻿using APKInfo.FrameworkParser;
-using System;
-using System.Collections;
-using System.Collections.Generic;
+﻿using System;
 using System.IO;
-using System.IO.Compression;
 using System.Linq;
+using System.Collections;
+using System.IO.Compression;
+using APKInfo.FrameworkParser;
+using System.Collections.Generic;
 
 namespace APKInfo {
     class Program {
         static void Main(string[] args) {
-            string cmdTag = "all";
             if (args.Length < 1) {
                 Console.WriteLine("usage: this apkFile");
                 Console.ReadKey();
                 return;
             }
-            if (args.Length>=2) {
-                cmdTag = args[1];
-            }
-
-            // 判断文件是否存在
-            string filePath = args[0];
-            if (!File.Exists(filePath)) {
-                Console.WriteLine("file not exists: " + filePath);
-                Console.ReadKey();
-                return;
-            }
-
+            string cmdTag = args.Length >= 2 ? args[1] : "all";
             try {
-                preWork(filePath);
-                Parse(filePath, cmdTag);
+                parse(args[0], cmdTag);
             } catch (Exception e) {
-                Console.WriteLine(args[0]);
                 Console.WriteLine(e.Message);
             }
             Console.ReadKey();
         }
 
 
-        static private void Parse(string filePath, string cmdTag) {
+        static private void parse(string filePath, string cmdTag) {
+            prepare(filePath);
             switch (cmdTag) {
                 case "sdk":
                     parseSDK(filePath);
                     break;
                 case "all":
                 default:
-                    ParseAll(filePath);
+                    parseAll(filePath);
                     break;
             }
         }
 
-        static private void preWork(string inputFilePath) {
+        static private void prepare(string inputFilePath) {
+            // 检查文件是否存在
+            if (!File.Exists(inputFilePath)) { throw new Exception("file not exists: " + inputFilePath); }
             string ext = Path.GetExtension(inputFilePath).ToLower();
             if (ext == ".apk") {
                 PathManager.zipFilePath = inputFilePath;
@@ -92,7 +81,7 @@ namespace APKInfo {
         /// 参数为APK文件全路径
         /// </summary>
         /// <param name="inputFilePath"></param>
-        static private void ParseAll(string inputFilePath) {
+        static private void parseAll(string inputFilePath) {
             string zipFilePath = PathManager.zipFilePath;
             bool noAMFile = false;
 
@@ -149,7 +138,7 @@ namespace APKInfo {
             try {
                 Console.WriteLine("\n签名信息：\n" + SignHelper.getApkSignInfo(PathManager.apksignerPath, zipFilePath));
             } catch (Exception e) {
-                Console.WriteLine(e.Message +  " 本地缺少Java环境");
+                Console.WriteLine(e.Message + " 本地缺少Java环境");
             }
 
             //foreach (var item in soLists) {
@@ -238,9 +227,7 @@ namespace APKInfo {
 
         static void parseSDK(string filePath) {
             if (!File.Exists(PathManager.sdkPath)) {
-                Console.WriteLine("SDK配置文件不存在: " + PathManager.sdkPath);
-                Console.ReadKey();
-                return;
+                throw new Exception("SDK配置文件不存在: " + PathManager.sdkPath);
             }
 
             string classLists = "";
@@ -260,25 +247,19 @@ namespace APKInfo {
                 Console.WriteLine("parsing: " + dexFile);
                 classLists += Utils.runCmd("java", string.Format("-jar \"{0}\" list classes  \"{1}\"", PathManager.baksmaliPath, dexFile));
             } else {
-                Console.WriteLine("invalid file");
-                Console.ReadKey();
-                return;
+                throw new Exception("invalid file");
             }
 
             if (!string.IsNullOrEmpty(classLists)) {
                 classLists = classLists.Replace('/', '.');
                 List<Model.SDKItem> hitSDKs = new();
-                try {
-                    string json = File.ReadAllText(PathManager.sdkPath);
-                    Model.SDKItems sdks = Newtonsoft.Json.JsonConvert.DeserializeObject<Model.SDKItems>(json);
-                    foreach (var item in sdks.items) {
-                        if (classLists.Contains(item.uid)) {
-                            hitSDKs.Add(item);
-                            Console.WriteLine(string.Format("{0}\t{1}\t{2}", item.uid, item.title, item.serviceProvider));
-                        }
+                string json = File.ReadAllText(PathManager.sdkPath);
+                Model.SDKItems sdks = Newtonsoft.Json.JsonConvert.DeserializeObject<Model.SDKItems>(json);
+                foreach (var item in sdks.items) {
+                    if (classLists.Contains(item.uid)) {
+                        Console.WriteLine(string.Format("{0}\t{1}\t{2}", item.uid, item.title, item.serviceProvider));
+                        hitSDKs.Add(item);
                     }
-                } catch (Exception) {
-                    throw;
                 }
             }
         }
