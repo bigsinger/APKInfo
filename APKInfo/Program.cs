@@ -255,8 +255,8 @@ namespace APKInfo {
                 classLists = classLists.Replace('/', '.');
                 List<Model.SDKItem> hitSDKs = new();
                 string json = File.ReadAllText(PathManager.sdkPath);
-                Model.SDKItems sdks = Newtonsoft.Json.JsonConvert.DeserializeObject<Model.SDKItems>(json);
-                foreach (var item in sdks.items) {
+                List<Model.SDKItem> sdks = Newtonsoft.Json.JsonConvert.DeserializeObject<List<Model.SDKItem>>(json);
+                foreach (var item in sdks) {
                     if (classLists.Contains(item.uid)) {
                         Console.WriteLine(string.Format("{0}\t{1}\t{2}", item.uid, item.title, item.serviceProvider));
                         hitSDKs.Add(item);

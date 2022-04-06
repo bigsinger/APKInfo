@@ -1,4 +1,4 @@
-{"items":[{"installCount":3069,"uid":"com.sift","serviceProvider":"Sift Science, Inc.","id":630,"category":"安全校验","title":"Sift","logoURL":"https://company-icon.oss-cn-hangzhou.aliyuncs.com/com.sift.png","order":1},
+[{"installCount":3069,"uid":"com.sift","serviceProvider":"Sift Science, Inc.","id":630,"category":"安全校验","title":"Sift","logoURL":"https://company-icon.oss-cn-hangzhou.aliyuncs.com/com.sift.png","order":1},
 {"installCount":509,"uid":"com.truecaller","serviceProvider":"True Software Scandinavia AB.","id":440,"category":"安全校验","title":"TrueCaller","logoURL":"https://company-icon.oss-cn-hangzhou.aliyuncs.com/com.truecaller.png","order":2},
 {"installCount":33,"uid":"com.blackberry","serviceProvider":"BlackBerry Limited.","id":416,"category":"安全校验","title":"BlackBerry Dynamics","logoURL":"https://company-icon.oss-cn-hangzhou.aliyuncs.com/com.blackberry.png","order":3},
 {"installCount":181372,"uid":"com.google.maps","serviceProvider":"Google LLC","id":1257,"category":"地图服务","title":"Google Maps","logoURL":"https://company-icon.oss-cn-hangzhou.aliyuncs.com/com.google.maps.png","order":1},
@@ -1082,4 +1082,4 @@
 {"installCount":110,"uid":"com.huawei.vr","serviceProvider":"华为云计算技术有限公司","id":150,"category":"AR/VR","title":"华为VR云渲游平台","logoURL":"https://company-icon.oss-cn-hangzhou.aliyuncs.com/com.huawei.vr.svg","order":5},
 {"installCount":64,"uid":"com.netease.insightar","serviceProvider":"杭州易现先进科技有限公司","id":1483,"category":"AR/VR","title":"网易洞见AR","logoURL":"https://company-icon.oss-cn-hangzhou.aliyuncs.com/com.netease.insightar.png","order":6},
 {"installCount":38,"uid":"org.artoolkit5","serviceProvider":"ARToolworks, Inc.","id":686,"category":"AR/VR","title":"ARtoolkit5","logoURL":"https://company-icon.oss-cn-hangzhou.aliyuncs.com/org.artoolkit5.png","order":7}
-]}
+]

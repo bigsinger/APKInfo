@@ -25,8 +25,8 @@ namespace APKInfo.Model {
 
         public int order { get; set; }
     }
-    public class SDKItems {
-        public List<SDKItem> items { get; set; }
-    }
+    //public class SDKItems {
+    //    public List<SDKItem> items { get; set; }
+    //}
 
 }
